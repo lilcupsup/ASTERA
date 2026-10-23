@@ -25,7 +25,7 @@ async page => {
  }
  await page.setViewportSize({width:390,height:844});await page.reload();await page.locator('.webgl-ready').waitFor();await page.waitForTimeout(700);await page.screenshot({path:'output/playwright/hero-unified-mobile.png'});
  await page.locator('#home').dispatchEvent('pointerdown',{clientX:300,clientY:300,pointerType:'touch'});await page.locator('#home').dispatchEvent('pointerup',{clientX:100,clientY:300,pointerType:'touch'});await title('TITAN');
- const overlap=await page.evaluate(()=>{const eyebrow=document.querySelector('#hero-number').getBoundingClientRect();return [...document.querySelectorAll('.orbital-labels span')].some(e=>getComputedStyle(e).visibility !== 'hidden' && e.getBoundingClientRect().bottom>eyebrow.top)});assert(!overlap,'Mobile orbit labels clear the copy');
+ const overlap=await page.evaluate(()=>{const eyebrow=document.querySelector('#hero-title').getBoundingClientRect();return [...document.querySelectorAll('.orbital-labels span')].some(e=>getComputedStyle(e).visibility !== 'hidden' && e.getBoundingClientRect().bottom>eyebrow.top)});assert(!overlap,'Mobile orbit labels clear the copy');
  await page.emulateMedia({reducedMotion:'reduce'});await page.reload();await page.locator('.webgl-ready').waitFor();await page.getByRole('button',{name:'Luna',exact:true}).click();await title('LUNA');await page.waitForTimeout(200);const reducedA=await positions();await page.waitForTimeout(200);assert(JSON.stringify(reducedA)===JSON.stringify(await positions()),'Reduced motion freezes animation');
 
  const architecture=await page.evaluate(async()=>{

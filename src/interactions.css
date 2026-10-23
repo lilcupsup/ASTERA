@@ -1,0 +1,347 @@
+/* Content carries the hierarchy; supplementary information reads as body copy. */
+.detail-context {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+.crew-name {
+  margin-top: 22px;
+}
+.crew-role {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--gold);
+}
+.fleet-info h3 {
+  margin-top: 0;
+}
+.hero-bottom {
+  justify-content: center;
+}
+.hero-bottom > .motion-toggle {
+  position: absolute;
+  right: 0;
+  margin-left: 0;
+}
+.crew-portrait,
+.interior-visual {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+}
+.crew-portrait {
+  aspect-ratio: 4 / 4.5;
+}
+.interior-visual {
+  aspect-ratio: 1.82;
+}
+.crew-portrait img,
+.interior-visual img {
+  height: 100%;
+}
+
+.ui-arrow {
+  transition: translate 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.button,
+.text-link,
+.store-buttons button,
+.gallery-controls button,
+.orbit-arrow,
+.motion-toggle,
+.booking-trigger {
+  transition:
+    background 0.35s,
+    color 0.35s,
+    border-color 0.35s,
+    box-shadow 0.35s,
+    transform 0.35s,
+    translate 0.35s,
+    scale 0.2s;
+}
+.button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.button::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    #fff3 50%,
+    transparent 70%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
+  pointer-events: none;
+}
+.header nav a,
+footer nav a,
+.text-link {
+  position: relative;
+}
+.header nav a::after,
+footer nav a::after,
+.text-link::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.text-link::after {
+  bottom: -1px;
+}
+.fleet-tabs button,
+.app-switch button,
+.destination-tabs button {
+  transition:
+    color 0.3s,
+    background 0.3s,
+    border-color 0.3s,
+    translate 0.3s;
+}
+.destination-card,
+.resort-preview,
+.crew-card,
+.interior-item {
+  transition:
+    translate 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    scale 0.2s,
+    box-shadow 0.6s,
+    border-color 0.4s;
+}
+.destination-card > img,
+.resort-preview > img,
+.crew-portrait img,
+.interior-visual img {
+  transition:
+    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.7s;
+}
+.destination-card-copy {
+  transition: translate 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.circle-link {
+  transition:
+    background 0.4s,
+    color 0.4s,
+    border-color 0.4s,
+    rotate 0.5s;
+}
+.destination-card::after,
+.resort-preview::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid #d6b56e55;
+  background: radial-gradient(
+    ellipse at var(--light-x, 50%) var(--light-y, 50%),
+    #efd3a025,
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.5s;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.pillar {
+  transition:
+    background 0.5s,
+    padding-left 0.5s,
+    border-color 0.5s;
+}
+.pillar-star {
+  transition:
+    rotate 0.7s,
+    scale 0.5s;
+}
+.reveal {
+  transition:
+    opacity 0.85s,
+    transform 1s cubic-bezier(0.16, 1, 0.3, 1),
+    translate 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.6s,
+    border-color 0.4s;
+  transition-delay:
+    var(--reveal-delay, 0ms), var(--reveal-delay, 0ms), 0s, 0s, 0s;
+}
+.button:active,
+.store-buttons button:active,
+.orbit-arrow:active,
+.gallery-controls button:active,
+.motion-toggle:active {
+  scale: 0.95;
+}
+.destination-card:active,
+.crew-card:active,
+.interior-item:active {
+  scale: 0.99;
+}
+.button:focus-visible .ui-arrow,
+.text-link:focus-visible .ui-arrow {
+  translate: 2px -2px;
+}
+.destination-card:focus-visible .circle-link {
+  background: var(--gold);
+  color: var(--obsidian);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .button:hover::before {
+    transform: translateX(130%);
+  }
+  .button.gold:hover {
+    box-shadow: 0 10px 35px #d6b56e30;
+  }
+  .button.outline:hover {
+    box-shadow: 0 6px 24px #0004;
+    border-color: var(--gold);
+  }
+  .button:hover .ui-arrow,
+  .text-link:hover .ui-arrow,
+  .store-buttons button:hover .ui-arrow,
+  .resort-preview:hover .ui-arrow,
+  .crew-card:hover .ui-arrow {
+    translate: 3px -3px;
+  }
+  .header nav a:hover::after,
+  footer nav a:hover::after,
+  .text-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  .destination-card:hover,
+  .crew-card:hover,
+  .interior-item:hover {
+    translate: 0 -7px;
+  }
+  .destination-card:hover > img,
+  .resort-preview:hover > img,
+  .crew-card:hover .crew-portrait img,
+  .interior-item:hover .interior-visual img {
+    transform: scale(1.055)
+      translate(var(--pointer-x, 0px), var(--pointer-y, 0px));
+    filter: saturate(1) brightness(1.06);
+  }
+  .destination-card:hover::after,
+  .resort-preview:hover::after {
+    opacity: 1;
+  }
+  .destination-card:hover .destination-card-copy {
+    translate: 0 -6px;
+  }
+  .destination-card:hover .circle-link {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--obsidian);
+    rotate: 4deg;
+  }
+  .store-buttons button:hover {
+    translate: 0 -4px;
+    box-shadow: 0 12px 25px #0003;
+  }
+  .orbit-arrow:hover,
+  .motion-toggle:hover,
+  .gallery-controls button:hover {
+    scale: 1.1;
+    border-color: var(--gold);
+    box-shadow: 0 0 22px #d6b56e20;
+  }
+  .fleet-tabs button:hover,
+  .app-switch button:hover,
+  .destination-tabs button:hover {
+    color: var(--ivory);
+    translate: 0 -2px;
+  }
+  .pillar:hover {
+    padding-left: 14px;
+    background: linear-gradient(90deg, #d6b56e0b, transparent);
+    border-color: #d6b56e90;
+  }
+  .pillar:hover .pillar-star {
+    rotate: 90deg;
+    scale: 1.18;
+  }
+}
+@keyframes dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes backdrop-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+dialog[open] {
+  animation: dialog-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+dialog[open]::backdrop {
+  animation: backdrop-enter 0.3s ease-out;
+}
+@media (max-width: 767px) {
+  .interior-visual {
+    aspect-ratio: 1.23;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  .ui-arrow,
+  .destination-card,
+  .crew-card,
+  .interior-item,
+  .destination-card-copy,
+  .store-buttons button,
+  .fleet-tabs button,
+  .app-switch button,
+  .destination-tabs button {
+    translate: none !important;
+  }
+  .destination-card > img,
+  .resort-preview > img,
+  .crew-portrait img,
+  .interior-visual img {
+    transform: none !important;
+  }
+  .pillar-star,
+  .circle-link {
+    rotate: none !important;
+    scale: 1 !important;
+  }
+  .pillar:hover {
+    padding-left: 0;
+  }
+  .button::before {
+    display: none;
+  }
+}
