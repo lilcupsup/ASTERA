@@ -9,7 +9,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "node --experimental-strip-types --test src/booking.test.ts"
+    "test": "node --experimental-strip-types --test src/booking.test.ts src/orbital-motion.test.ts"
   },
   "dependencies": {
     "@fontsource-variable/manrope": "^5.3.0",

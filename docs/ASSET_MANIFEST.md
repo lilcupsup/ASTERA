@@ -34,3 +34,6 @@
 
 Текстуры TEX-luna, TEX-mars, TEX-europa, TEX-saturn, TEX-titan: generated / integrated. Для каждого IMG/TEX есть PNG-оригинал и WebP 640/1280. 23 WebP версии 1280 вместе занимают около 3.2 MB. Версия модели image_gen не раскрыта инструментом.
 
+
+Hero upgrade: добавлены 5 локальных TEX-*-detail.webp из оригиналов 1774×887, quality 94; 3 TEX-*-relief.webp для Luna/Mars/Europa. Это производные существующих ассетов, без новых генераций. На мобильных используются 1280-версии. Подробности: docs/HERO_UPGRADE.md.
+

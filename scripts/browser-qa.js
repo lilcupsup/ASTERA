@@ -8,8 +8,10 @@ async (page) => {
   await page.goto("http://127.0.0.1:5173/");
   await page.locator(".webgl-ready").waitFor();
   await page.getByRole("button", { name: "Mars", exact: true }).click();
+  await page.waitForFunction(() => document.querySelector('h1').textContent === 'MARS');
   assert((await page.locator("h1").textContent()) === "MARS", "Mars selection");
   await page.keyboard.press("ArrowRight");
+  await page.waitForFunction(() => document.querySelector('h1').textContent === 'EUROPA');
   assert(
     (await page.locator("h1").textContent()) === "EUROPA",
     "Keyboard navigation",
@@ -17,6 +19,7 @@ async (page) => {
   await page
     .getByRole("button", { name: "Next destination", exact: true })
     .click();
+  await page.waitForFunction(() => document.querySelector('h1').textContent === 'SATURN');
   assert(
     (await page.locator("h1").textContent()) === "SATURN",
     "Arrow navigation",
@@ -114,6 +117,7 @@ async (page) => {
       pointerId: 1,
       pointerType: "touch",
     });
+  await page.waitForFunction(() => document.querySelector('h1').textContent === 'TITAN');
   assert((await page.locator("h1").textContent()) === "TITAN", "Touch swipe");
   await page.getByRole("button", { name: "Saturn", exact: true }).click();
   await page.waitForTimeout(1500);

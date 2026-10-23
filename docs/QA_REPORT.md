@@ -34,3 +34,7 @@ VID-05 получен и интегрирован. Проверены: деко�
 ## Обновление формы
 Нативные раскрывающиеся списки и календарь заменены тематическими popover-панелями. Проверены направление, дата, гости, каюта, передача FormData и итоговая цена; клавиатура, Escape, Tab, mobile 390/360 px, границы календаря и reduced-motion. Проверка: scripts/booking-controls-qa.js. Снимки booking-destination.png, booking-calendar.png, booking-mobile-390.png.
 
+
+## Обновление 3D hero
+Общая фаза орбиты, камера, шейдеры космоса и колец проверены отдельным scripts/hero-qa.js. Все сценарии прошли, browserErrors=[]; общий browser-qa.js также PASS. Unit-тестов теперь 7. Подробности и ограничения — docs/HERO_UPGRADE.md.
+

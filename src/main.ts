@@ -65,13 +65,23 @@ let scene:
   | Awaited<ReturnType<(typeof import("./planetary"))["initPlanetary"]>>
   | undefined;
 const hero = $("#home");
+let presentedPlanet = 3;
+let copyAnimations: Animation[] = [];
 function selectPlanet(n: number) {
   active = (n + 5) % 5;
-  const d = destinations[active];
-  scene?.select(active);
+  if (scene) {
+    scene.select(active);
+    if (hero.classList.contains("webgl-fallback")) presentPlanet(active);
+  } else presentPlanet(active);
+}
+function presentPlanet(index: number) {
+  presentedPlanet = index;
+  const d = destinations[index];
+  copyAnimations.forEach((animation) => animation.cancel());
+  copyAnimations = [];
   $("#hero-title").textContent = d.name.toUpperCase();
   $("#hero-number").innerHTML =
-    `Destination 0${active + 1} <span class="gold-line"></span>`;
+    `Destination 0${index + 1} <span class="gold-line"></span>`;
   $("#hero-resort").textContent = d.resort.toUpperCase();
   $("#hero-description").textContent = d.description;
   $("#hero-explore").innerHTML = `Explore ${d.name} ${arrow}`;
@@ -79,7 +89,7 @@ function selectPlanet(n: number) {
     `${img(d.image, d.resort, "", true)}<span class="preview-body"><span><span class="preview-title">${d.resort}</span><span class="eyebrow preview-type">${d.type}</span></span><span class="preview-arrow">↗</span></span>`;
   document
     .querySelectorAll("[data-planet]")
-    .forEach((b, i) => b.setAttribute("aria-pressed", String(i === active)));
+    .forEach((b, i) => b.setAttribute("aria-pressed", String(i === index)));
   $("#planet-announcement").textContent =
     `${d.name}. ${d.resort}. ${d.description}`;
   $("#booking-destination").setAttribute("data-selected", d.id);
@@ -87,6 +97,26 @@ function selectPlanet(n: number) {
   $("#booking-destination").dispatchEvent(new Event("change"));
   hero.style.setProperty("--destination-accent", d.accent);
   $(".hero-fallback").innerHTML = img(d.image, d.resort, "", true);
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    for (const [element, offset] of [
+      [".hero-copy", 15],
+      ["#resort-preview", 22],
+    ] as const) {
+      copyAnimations.push(
+        $(element).animate(
+          [
+            {
+              opacity: 0.6,
+              translate: `${offset}px 7px`,
+              filter: "blur(.7px)",
+            },
+            { opacity: 1, translate: "0px 0px", filter: "blur(0px)" },
+          ],
+          { duration: 650, easing: "cubic-bezier(.2,.65,.25,1)" },
+        ),
+      );
+    }
+  }
 }
 document
   .querySelectorAll<HTMLElement>("[data-planet]")
@@ -156,7 +186,8 @@ matchMedia("(prefers-reduced-motion: reduce)").addEventListener(
 import("./planetary")
   .then((m) => {
     try {
-      scene = m.initPlanetary($("#planetary"), selectPlanet);
+      scene = m.initPlanetary($("#planetary"), selectPlanet, presentPlanet);
+      if (active !== 3) scene.select(active);
       updateMotion();
       hero.classList.add("webgl-ready");
     } catch (e) {
@@ -208,8 +239,8 @@ function destinationDetail(i: number) {
     `${img(d.image, d.resort)}<div class="dialog-copy">${label(d.name + " / " + d.type)}<h2>${d.resort}</h2><p>${d.detail}</p><ul>${d.facts.map((f) => `<li>${f}</li>`).join("")}</ul><div class="dialog-meta"><span>Concept journey from ${money(d.price)} / guest</span><button class="button gold" data-book>Explore demo journeys →</button></div><p class="small-note">Fictional future concept. Durations and prices are illustrative, not real travel offers.</p></div>`,
   );
 }
-$("#hero-explore").onclick = () => destinationDetail(active);
-$("#resort-preview").onclick = () => destinationDetail(active);
+$("#hero-explore").onclick = () => destinationDetail(presentedPlanet);
+$("#resort-preview").onclick = () => destinationDetail(presentedPlanet);
 document
   .querySelectorAll<HTMLElement>("[data-destination]")
   .forEach(
