@@ -6,6 +6,7 @@ async (page) => {
   page.on("pageerror", (e) => errors.push(e.message));
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("http://127.0.0.1:5173/");
+  await page.locator('[data-language="en"]').click();
   await page.locator(".webgl-ready").waitFor();
   await page.getByRole("button", { name: "Mars", exact: true }).click();
   await page.waitForFunction(() => document.querySelector('h1').textContent === 'MARS');

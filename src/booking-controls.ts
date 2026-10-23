@@ -1,3 +1,5 @@
+import { getLanguage, getLocale } from "./locale";
+
 // Native controls retain the form data; visible controls use local, themed popovers.
 export function enhanceBooking(form: HTMLFormElement) {
   let active: { panel: HTMLElement; trigger: HTMLButtonElement } | null = null;
@@ -19,7 +21,10 @@ export function enhanceBooking(form: HTMLFormElement) {
     );
     panel.style.width = `${width}px`;
     panel.style.maxHeight = "none";
-    const naturalHeight = Math.min(panel.scrollHeight + 2, panel.classList.contains("date-panel") ? 520 : 430);
+    const naturalHeight = Math.min(
+      panel.scrollHeight + 2,
+      panel.classList.contains("date-panel") ? 520 : 430,
+    );
     const below = innerHeight - rect.bottom - 18;
     const above = rect.top - 18;
     const useAbove = below < naturalHeight && above > below;
@@ -55,8 +60,17 @@ export function enhanceBooking(form: HTMLFormElement) {
       close(true);
     }
     if (e.key === "Tab" && active) {
-      const stops = Array.from(active.panel.querySelectorAll<HTMLElement>('button:not(:disabled):not([tabindex="-1"])'));
-      if (!active.panel.classList.contains("date-panel") || (e.shiftKey && document.activeElement === stops[0]) || (!e.shiftKey && document.activeElement === stops.at(-1))) close(true);
+      const stops = Array.from(
+        active.panel.querySelectorAll<HTMLElement>(
+          'button:not(:disabled):not([tabindex="-1"])',
+        ),
+      );
+      if (
+        !active.panel.classList.contains("date-panel") ||
+        (e.shiftKey && document.activeElement === stops[0]) ||
+        (!e.shiftKey && document.activeElement === stops.at(-1))
+      )
+        close(true);
     }
   });
   const setup = (
@@ -161,8 +175,10 @@ export function enhanceBooking(form: HTMLFormElement) {
       } else if (e.key.length === 1 && e.key !== " ") {
         typed = Date.now() - typedAt > 700 ? e.key : typed + e.key;
         typedAt = Date.now();
-        const index = options.findIndex((o) =>
-          o.text.toLowerCase().startsWith(typed.toLowerCase()),
+        const index = buttons.findIndex((button) =>
+          (button.querySelector(".option-name")?.textContent ?? "")
+            .toLowerCase()
+            .startsWith(typed.toLowerCase()),
         );
         if (index >= 0) focusOption(index);
       }
@@ -184,7 +200,7 @@ export function enhanceBooking(form: HTMLFormElement) {
   let shown = parse(input.value),
     focused = parse(input.value);
   const format = (d: Date) =>
-    new Intl.DateTimeFormat("en-GB", {
+    new Intl.DateTimeFormat(getLocale(), {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -203,7 +219,7 @@ export function enhanceBooking(form: HTMLFormElement) {
     const canPrevious =
       year > today.getFullYear() ||
       (year === today.getFullYear() && month > today.getMonth());
-    panel.innerHTML = `<div class="picker-caption">A DATE WITH THE EXTRAORDINARY</div><div class="calendar-heading"><button type="button" data-month="-1" aria-label="Previous month" ${canPrevious ? "" : "disabled"}>‹</button><span aria-live="polite">${new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric" }).format(shown)}</span><button type="button" data-month="1" aria-label="Next month">›</button></div><div class="calendar-week" aria-hidden="true">${["M", "T", "W", "T", "F", "S", "S"].map((d) => `<span>${d}</span>`).join("")}</div><div class="calendar-days" role="group" aria-label="Choose departure date">${'<span class="calendar-empty"></span>'.repeat(offset)}${Array.from(
+    panel.innerHTML = `<div class="picker-caption">A DATE WITH THE EXTRAORDINARY</div><div class="calendar-heading"><button type="button" data-month="-1" aria-label="Previous month" ${canPrevious ? "" : "disabled"}>‹</button><span aria-live="polite">${new Intl.DateTimeFormat(getLocale(), { month: "long", year: "numeric" }).format(shown)}</span><button type="button" data-month="1" aria-label="Next month">›</button></div><div class="calendar-week" aria-hidden="true">${(getLanguage() === "ru" ? ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"] : ["M", "T", "W", "T", "F", "S", "S"]).map((d) => `<span>${d}</span>`).join("")}</div><div class="calendar-days" role="group" aria-label="Choose departure date">${'<span class="calendar-empty"></span>'.repeat(offset)}${Array.from(
       { length: count },
       (_, i) => {
         const d = new Date(year, month, i + 1, 12),
@@ -309,5 +325,10 @@ export function enhanceBooking(form: HTMLFormElement) {
     shown = new Date(focused);
     render(true);
     position();
+  });
+  document.addEventListener("astera:languagechange", () => {
+    close();
+    syncDate();
+    if (panel.childElementCount) render();
   });
 }

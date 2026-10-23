@@ -1,7 +1,7 @@
 async page => {
  const assert=(ok,m)=>{if(!ok)throw Error(m)};
  const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
- await page.setViewportSize({width:1440,height:900});await page.goto('http://localhost:5173/');await page.locator('.webgl-ready').waitFor();
+ await page.setViewportSize({width:1440,height:900});await page.goto('http://localhost:5173/');await page.locator('[data-language="en"]').click();await page.locator('.webgl-ready').waitFor();
  const title=async name=>page.waitForFunction(n=>document.querySelector('h1').textContent===n,name);
  const positions=()=>page.locator('.orbital-labels span').evaluateAll(es=>es.map(e=>[parseFloat(e.style.left),parseFloat(e.style.top)]));
  const before=await positions();await page.getByRole('button',{name:'Next destination',exact:true}).click();await title('TITAN');

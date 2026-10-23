@@ -1,8 +1,12 @@
 import "@fontsource-variable/manrope/index.css";
 import "@fontsource/cormorant-garamond/latin-400.css";
 import "@fontsource/cormorant-garamond/latin-400-italic.css";
+import "@fontsource/cormorant-garamond/cyrillic-400.css";
+import "@fontsource/cormorant-garamond/cyrillic-400-italic.css";
 import "./style.css";
 import "./interactions.css";
+import "./i18n.css";
+import { initLocalization } from "./i18n";
 import { destinations, experiences, fleet, crew, imageUrl } from "./data";
 import { searchJourneys, money } from "./booking";
 import { enhanceBooking } from "./booking-controls";
@@ -16,7 +20,7 @@ const label = (text: string) => `<p class="detail-context">${text}</p>`;
 const app = document.querySelector<HTMLDivElement>("#app")!;
 app.innerHTML = `
 <a class="skip" href="#destinations">Skip to destinations</a>
-<header class="header"><a class="brand" href="#home" aria-label="ASTERA home"><img src="/media/images/astera-logo.png" alt="ASTERA" width="108" height="78"><span>INTERPLANETARY TRAVEL & RESORTS</span></a><nav aria-label="Main navigation"><a href="#destinations">Destinations</a><a href="#fleet">The Fleet</a><a href="#experience">Experience</a><a href="#crew">Crew</a></nav><a class="button outline header-book" href="#booking">Book a journey ${arrow}</a><button class="menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button></header>
+<header class="header"><a class="brand" href="#home" aria-label="ASTERA home"><img src="/media/images/astera-logo.png" alt="ASTERA" width="108" height="78"><span>INTERPLANETARY TRAVEL & RESORTS</span></a><nav aria-label="Main navigation"><a href="#destinations">Destinations</a><a href="#fleet">The Fleet</a><a href="#experience">Experience</a><a href="#crew">Crew</a></nav><div class="header-actions"><a class="button outline header-book" href="#booking"><span class="booking-label-full">Book a journey</span><span class="booking-label-short">Book</span>${arrow}</a><div class="language-switch" role="group" aria-label="Site language" data-no-localize><span class="language-indicator" aria-hidden="true"></span><button type="button" data-language="ru" lang="ru" aria-label="Русский" aria-pressed="false">RU</button><button type="button" data-language="en" lang="en" aria-label="English" aria-pressed="true">EN</button></div><button class="menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button></div></header><span class="language-status sr-only" aria-live="polite" data-no-localize></span>
 <main>
 <section id="home" class="hero" aria-label="Planetary destination carousel" tabindex="0">
  <div class="hero-fallback">${img("IMG-03_saturn", "Saturn and the ASTERA orbital resort", "", true)}</div><div id="planetary" class="planetary"></div><div class="hero-shade"></div>
@@ -515,3 +519,5 @@ fetch("/media/video/manifest.json")
   })
   .catch(() => {});
 window.addEventListener("pagehide", () => scene?.dispose());
+
+initLocalization();
