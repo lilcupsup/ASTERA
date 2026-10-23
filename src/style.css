@@ -124,6 +124,25 @@ p {
   font-size: 19px;
   line-height: 1;
 }
+.ui-arrow {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  vertical-align: -0.12em;
+  font-size: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.preview-arrow .ui-arrow,
+.store-buttons .ui-arrow,
+.phone-chip .ui-arrow {
+  font-size: inherit;
+}
 .button.gold {
   background: var(--gold);
   color: #101420;
@@ -1442,7 +1461,8 @@ dialog::backdrop {
     padding: 10px 13px;
     min-height: 37px;
   }
-  .header-book span {
+  .header-book span,
+  .header-book .ui-arrow {
     display: none;
   }
   .menu-toggle {
