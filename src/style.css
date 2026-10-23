@@ -354,8 +354,7 @@ p {
   height: 41px;
   border: 1px solid var(--gold);
   border-radius: 50%;
-  font-family: Georgia, serif;
-  font-size: 29px;
+  padding: 0;
   display: grid;
   place-items: center;
   color: var(--gold);
@@ -364,6 +363,17 @@ p {
 }
 .orbit-arrow:hover {
   background: #d6b56e30;
+}
+.orbit-arrow svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
 }
 .prev {
   left: 2%;
@@ -1556,8 +1566,11 @@ dialog::backdrop {
   .orbit-arrow {
     width: 30px;
     height: 30px;
-    font-size: 22px;
     top: 56%;
+  }
+  .orbit-arrow svg {
+    width: 20px;
+    height: 20px;
   }
   .prev {
     left: 1%;
