@@ -18,13 +18,13 @@ export function createSpace(lowPower: boolean, dpr: number) {
       void main(){
         vec2 p=(vUv-.5)*vec2(uAspect,1.)+uView*.012;
         float haze=fbm(p*4.+vec2(12,4));
-        float spine=p.y-.19-p.x*.27+.12*sin(p.x*2.);
-        float band=exp(-spine*spine*24.);
-        float wisps=pow(fbm(p*8.+haze*2.),2.4)*band;
-        float dust=smoothstep(.4,.68,fbm(p*17.+8.));
+        float spine=p.y-.10-p.x*.48+.10*sin(p.x*2.);
+        float band=exp(-spine*spine*30.);
+        float wisps=pow(fbm(p*18.+haze*2.),2.4)*band;
+        float dust=smoothstep(.4,.68,fbm(p*40.+8.));
         vec3 color=vec3(.0018,.003,.0065);
-        color+=mix(vec3(.015,.021,.035),vec3(.028,.024,.019),haze)*wisps*(1.-dust*.83)*.65;
-        color+=vec3(.015,.012,.007)*exp(-length((p-vec2(-.65,-.04))*vec2(1.,1.7))*7.);
+        color+=mix(vec3(.025,.043,.067),vec3(.10,.075,.042),smoothstep(.25,.9,p.x))*wisps*(1.-dust*.87)*1.7;
+        color+=vec3(.15,.082,.03)*exp(-length((p-vec2(.94,.32))*vec2(1.,1.7))*8.);
         gl_FragColor=vec4(color,1.);
         #include <colorspace_fragment>
       }`,
@@ -38,7 +38,7 @@ export function createSpace(lowPower: boolean, dpr: number) {
     seed = (seed * 1664525 + 1013904223) >>> 0;
     return seed / 4294967296;
   };
-  const count = lowPower ? 1800 : 4800;
+  const count = lowPower ? 1800 : 7000;
   const positions = new Float32Array(count * 3),
     sizes = new Float32Array(count),
     phases = new Float32Array(count),
@@ -73,7 +73,7 @@ export function createSpace(lowPower: boolean, dpr: number) {
     vertexColors: true,
     uniforms: { uTime: time, uDpr: { value: dpr } },
     vertexShader: `attribute float aSize;attribute float aPhase;varying vec3 vColor;varying float vPhase;varying float vSize;uniform float uDpr;void main(){vColor=color;vPhase=aPhase;vSize=aSize;vec4 p=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*p;gl_PointSize=aSize*uDpr;}`,
-    fragmentShader: `uniform float uTime;varying vec3 vColor;varying float vPhase;varying float vSize;void main(){vec2 p=gl_PointCoord-.5;float r=length(p);float core=exp(-r*r*28.);float rays=(exp(-abs(p.x)*60.)+exp(-abs(p.y)*60.))*exp(-r*7.)*step(3.,vSize)*.22;float shimmer=.9+.1*sin(uTime*.55+vPhase);gl_FragColor=vec4(vColor,(core+rays)*shimmer*.72);}`,
+    fragmentShader: `uniform float uTime;varying vec3 vColor;varying float vPhase;varying float vSize;void main(){vec2 p=gl_PointCoord-.5;float r=length(p);float core=exp(-r*r*28.);float rays=(exp(-abs(p.x)*60.)+exp(-abs(p.y)*60.))*exp(-r*7.)*step(3.,vSize)*.22;float shimmer=.9+.1*sin(uTime*.55+vPhase);gl_FragColor=vec4(vColor,(core+rays)*shimmer*.9);}`,
   });
   const stars = new THREE.Points(geo, starMaterial);
   stars.frustumCulled = false;
@@ -128,5 +128,41 @@ export function createRings(lowPower: boolean) {
       #include <colorspace_fragment>
     }`,
   });
-  return { geometry, material };
+  // Sparse icy debris has actual thickness and perspective, attached to the
+  // same Saturn transform as the ring sheet. No screen-space particle overlay.
+  const count = lowPower ? 4000 : 14000;
+  const positions = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+  let seed = 917;
+  const random = () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+  for (let i = 0; i < count; i++) {
+    const angle = random() * Math.PI * 2;
+    let radius = 1.23 + random() * 0.89;
+    if (Math.abs(radius - 1.82) < 0.028) radius += 0.06;
+    positions.set(
+      [
+        Math.cos(angle) * radius,
+        Math.sin(angle) * radius,
+        (random() - 0.5) * 0.015,
+      ],
+      i * 3,
+    );
+    sizes[i] = 0.001 + Math.pow(random(), 10) * 0.009;
+  }
+  const dustGeometry = new THREE.BufferGeometry();
+  dustGeometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(positions, 3),
+  );
+  dustGeometry.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
+  const dustMaterial = new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    vertexShader: `attribute float aSize;varying vec3 vLocal;void main(){vLocal=position;vec4 p=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*p;gl_PointSize=clamp(aSize*1200.*length(modelMatrix[0].xyz)/max(1.,-p.z),.65,3.5);}`,
+    fragmentShader: `varying vec3 vLocal;void main(){vec2 p=gl_PointCoord*2.-1.;float r=dot(p,p);if(r>1.)discard;float light=.32+.68*max(0.,dot(normalize(vec3(p,sqrt(1.-r))),normalize(vec3(-.6,.6,1.))));vec3 sun=normalize(vec3(-.65,.6,-.46));float along=max(0.,-dot(vLocal,sun));float shadow=mix(.18,1.,smoothstep(.96,1.06,length(vLocal+sun*along)));gl_FragColor=vec4(vec3(.72,.58,.38)*light*shadow,(1.-smoothstep(.6,1.,r))*.75);}`,
+  });
+  return { geometry, material, dustGeometry, dustMaterial };
 }

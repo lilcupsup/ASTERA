@@ -1,5 +1,10 @@
 import * as THREE from "three";
-import { orbitPose, nearestPhase, ORBIT_STEP } from "./orbital-motion";
+import {
+  orbitPose,
+  orbitPoint,
+  nearestPhase,
+  ORBIT_STEP,
+} from "./orbital-motion";
 import { createSpace, atmosphere, createRings } from "./space-effects";
 
 export function initPlanetary(
@@ -32,9 +37,9 @@ export function initPlanetary(
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 600);
   camera.position.z = 14;
-  scene.add(new THREE.AmbientLight(0xb7c7e4, 0.25));
-  const sun = new THREE.DirectionalLight(0xffe8c6, 3.15);
-  sun.position.set(-12, 8, 10);
+  scene.add(new THREE.AmbientLight(0xb7c7e4, 0.14));
+  const sun = new THREE.DirectionalLight(0xffe8c6, 3.8);
+  sun.position.set(-12, 8, 4);
   scene.add(sun);
   const fill = new THREE.DirectionalLight(0x7190bc, 0.13);
   fill.position.set(10, -1, -8);
@@ -66,8 +71,14 @@ export function initPlanetary(
     group.add(body);
     if (index === 3) {
       const ring = new THREE.Mesh(rings.geometry, rings.material);
-      ring.rotation.set(1.32, 0.03, 0);
+      ring.rotation.set(1.45, 0.03, 0);
       group.add(ring);
+      const particles = new THREE.Points(
+        rings.dustGeometry,
+        rings.dustMaterial,
+      );
+      particles.rotation.copy(ring.rotation);
+      group.add(particles);
       group.rotation.z = 0.16;
     }
     if (index === 1 || index === 3 || index === 4) {
@@ -83,23 +94,23 @@ export function initPlanetary(
     return { group, body };
   }
   const worlds = names.map((_, i) => world(i));
-  // The overview echo fills the active world's place while its full-size mesh
-  // travels toward the camera. Every position is derived from the same phase.
-  const echoes = names.map((_, i) => world(i));
   const labels = Array.from(
     hero.querySelectorAll<HTMLElement>(".orbital-labels span"),
   );
   const projected = new THREE.Vector3();
   const ribbonGeo = new THREE.BufferGeometry();
-  const ribbonPositions = new Float32Array(193 * 3);
+  const ribbonPositions = new Float32Array(513 * 3);
+  const ribbonAlpha = new Float32Array(513);
   ribbonGeo.setAttribute(
     "position",
     new THREE.BufferAttribute(ribbonPositions, 3),
   );
-  const ribbonMat = new THREE.LineBasicMaterial({
-    color: 0xd6b56e,
+  ribbonGeo.setAttribute("aOpacity", new THREE.BufferAttribute(ribbonAlpha, 1));
+  const ribbonMat = new THREE.ShaderMaterial({
     transparent: true,
-    opacity: 0.27,
+    depthWrite: false,
+    vertexShader: `attribute float aOpacity;varying float vOpacity;void main(){vOpacity=aOpacity;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+    fragmentShader: `varying float vOpacity;void main(){gl_FragColor=vec4(.71,.52,.27,vOpacity);}`,
   });
   const ribbon = new THREE.Line(ribbonGeo, ribbonMat);
   scene.add(ribbon);
@@ -131,19 +142,16 @@ export function initPlanetary(
     pointer = new THREE.Vector2();
   const viewTarget = new THREE.Vector3();
   const narrow = () => container.clientWidth < 768;
-  function overviewAt(angle: number) {
-    return new THREE.Vector3(
-      Math.sin(angle) * (narrow() ? 2 : 6.1),
-      (narrow() ? 3.35 : 2.75) + Math.cos(angle) * (narrow() ? 0.18 : 0.35),
-      -2.5 + Math.cos(angle) * 2.5,
-    );
-  }
   function updateRibbon() {
-    for (let i = 0; i <= 192; i++) {
-      const p = overviewAt((i / 192) * Math.PI * 2);
-      ribbonPositions.set(p.toArray(), i * 3);
+    for (let i = 0; i <= 512; i++) {
+      const p = orbitPoint((i / 512) * Math.PI * 2, narrow(), camera.aspect);
+      ribbonPositions.set(p, i * 3);
+      // Only the distant arc catches light. The near bend remains in space,
+      // underneath the foreground world, rather than drawing through the copy.
+      ribbonAlpha[i] = THREE.MathUtils.smoothstep(-p[2], 80, 155) * 0.5;
     }
     ribbonGeo.attributes.position.needsUpdate = true;
+    ribbonGeo.attributes.aOpacity.needsUpdate = true;
     ribbonGeo.computeBoundingSphere();
   }
   function schedule() {
@@ -185,24 +193,27 @@ export function initPlanetary(
       onFocus(displayed);
     }
     worlds.forEach(({ group, body }, i) => {
-      const pose = orbitPose(
-        i,
-        phase + Math.sin(elapsed * 0.14) * 0.004,
-        narrow(),
-      );
+      const pose = orbitPose(i, phase, narrow(), camera.aspect);
       group.position.set(...pose.world);
-      group.scale.setScalar(narrow() ? 4.05 : 4.8);
+      group.scale.setScalar(narrow() ? 4.05 : 5.0);
       if (animate) body.rotation.y += dt * (i === 3 ? 0.012 : 0.018);
-      echoes[i].group.position.set(...pose.overview);
-      echoes[i].group.scale.setScalar((narrow() ? 0.22 : 0.34) * pose.focus);
-      echoes[i].body.rotation.y = body.rotation.y;
-      echoes[i].group.visible = pose.focus > 0.00001;
-      projected.set(...pose.overview).project(camera);
+      projected.set(...pose.world).project(camera);
       const label = labels[i];
       if (label) {
         label.style.left = `${(projected.x * 0.5 + 0.5) * 100}%`;
         label.style.top = `${(-projected.y * 0.5 + 0.5) * 100}%`;
-        label.style.opacity = String(0.55 + 0.45 * pose.focus);
+        const labelOpacity = THREE.MathUtils.smoothstep(
+          -pose.world[2],
+          100,
+          150,
+        );
+        label.style.opacity = String(labelOpacity);
+        label.style.visibility = labelOpacity < 0.01 ? "hidden" : "visible";
+        const radiusPixels =
+          (((narrow() ? 4.05 : 5.0) / (14 - pose.world[2])) *
+            container.clientHeight) /
+          (2 * Math.tan(THREE.MathUtils.degToRad(21)));
+        label.style.setProperty("--label-offset", `${radiusPixels + 12}px`);
         label.dataset.active = String(i === displayed);
         label.style.setProperty(
           "--label-depth",
@@ -213,14 +224,16 @@ export function initPlanetary(
     space.time.value = elapsed;
     space.view.value.copy(pointer);
     space.aspect.value = camera.aspect;
-    ribbonMat.opacity = 0.24 + Math.sin(elapsed * 0.24) * 0.025;
-    glints.forEach((dot, i) =>
-      dot.position.copy(
-        overviewAt(
-          (i / 9) * Math.PI * 2 - phase * ORBIT_STEP + elapsed * 0.012,
-        ),
-      ),
-    );
+    glints.forEach((dot, i) => {
+      const p = orbitPoint(
+        (i / 9) * Math.PI * 2 - phase * ORBIT_STEP + elapsed * 0.012,
+        narrow(),
+        camera.aspect,
+      );
+      dot.position.set(...p);
+      dot.scale.setScalar((14 - p[2]) * 0.07);
+      dot.visible = p[2] < -135;
+    });
     hero.style.setProperty("--scene-x", `${pointer.x * 4}px`);
     hero.style.setProperty("--scene-y", `${-pointer.y * 3}px`);
     renderer.render(scene, camera);
@@ -366,12 +379,7 @@ export function initPlanetary(
       1 - ((e.clientY - r.top) / r.height) * 2,
     );
     raycaster.setFromCamera(input, camera);
-    const objects = [
-      ...echoes.filter((p) => p.group.visible).map((p) => p.body),
-      ...worlds
-        .filter((_, i) => orbitPose(i, phase, narrow()).focus < 0.5)
-        .map((p) => p.body),
-    ];
+    const objects = worlds.map((p) => p.body);
     const hit = raycaster.intersectObjects(objects, false)[0];
     if (hit) onSelect(hit.object.parent!.userData.world as number);
   };
@@ -414,10 +422,14 @@ export function initPlanetary(
         target,
         camera: camera.position.toArray(),
         worlds: worlds.map((w) => ({
+          id: w.body.uuid,
           position: w.group.position.toArray(),
           rotation: w.body.rotation.y,
+          scale: w.group.scale.x,
         })),
-        overview: echoes.map((w) => w.group.position.toArray()),
+        worldCount: scene.children.filter(
+          (child) => typeof child.userData.world === "number",
+        ).length,
         drawCalls: renderer.info.render.calls,
         dpr,
         paused,
@@ -440,6 +452,8 @@ export function initPlanetary(
       geometry.dispose();
       rings.geometry.dispose();
       rings.material.dispose();
+      rings.dustGeometry.dispose();
+      rings.dustMaterial.dispose();
       ribbonGeo.dispose();
       ribbonMat.dispose();
       glintGeo.dispose();
