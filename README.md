@@ -1,6 +1,6 @@
 # ASTERA — Beyond Ordinary Horizons
 
-Локальный сайт вымышленной компании межпланетных путешествий. Vite + TypeScript + Three.js. Ничего не опубликовано через ChatGPT Sites.
+Cайт вымышленной компании межпланетных путешествий. Vite + TypeScript + Three.js.
 
 ## Запуск
 
